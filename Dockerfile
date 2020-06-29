@@ -61,6 +61,7 @@ EXPOSE 3306
 
 #Efip 
 #Copio el sql que inicializa la base para el efip
+
 RUN export GIT_SSL_NO_VERIFY=1 && cd /tmp && git clone https://github.com/efip-farmasalud/mariadb && cd mariadb && cp sql/* /docker-entrypoint-initdb.d/
 
 CMD ["mysqld"]
