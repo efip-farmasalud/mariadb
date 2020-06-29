@@ -16,6 +16,14 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Current Database: `efip`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `efip` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `efip`;
+
+--
 -- Table structure for table `articulo`
 --
 
@@ -35,16 +43,6 @@ CREATE TABLE `articulo` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `articulo`
---
-
-LOCK TABLES `articulo` WRITE;
-/*!40000 ALTER TABLE `articulo` DISABLE KEYS */;
-INSERT INTO `articulo` VALUES (1,'0800080008000800','ibuprofeno',10,'ibuprofeno 600','una marca'),(2,'0800080008000801','paracetamol',10,'paracetamol 600','paracetamol marca'),(3,'0800080008000802','flexina',10,'flexina 600','flexina marca');
-/*!40000 ALTER TABLE `articulo` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `factura`
 --
 
@@ -60,15 +58,6 @@ CREATE TABLE `factura` (
   UNIQUE KEY `factura_numero_factura_UN` (`numero_factura`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `factura`
---
-
-LOCK TABLES `factura` WRITE;
-/*!40000 ALTER TABLE `factura` DISABLE KEYS */;
-/*!40000 ALTER TABLE `factura` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `inventario`
@@ -92,16 +81,6 @@ CREATE TABLE `inventario` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `inventario`
---
-
-LOCK TABLES `inventario` WRITE;
-/*!40000 ALTER TABLE `inventario` DISABLE KEYS */;
-INSERT INTO `inventario` VALUES (1,'2021-06-17',1,'0800080008000800',10),(2,'2021-06-17',1,'0800080008000801',10),(3,'2021-07-20',1,'0800080008000802',10),(4,'2021-06-17',2,'0800080008000800',10),(5,'2021-06-17',2,'0800080008000801',10),(6,'2021-06-17',2,'0800080008000802',10),(7,'2021-06-17',3,'0800080008000800',10),(8,'2021-06-17',3,'0800080008000801',10),(9,'2021-06-17',3,'0800080008000802',10);
-/*!40000 ALTER TABLE `inventario` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `sucursales`
 --
 
@@ -116,16 +95,6 @@ CREATE TABLE `sucursales` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sucursales`
---
-
-LOCK TABLES `sucursales` WRITE;
-/*!40000 ALTER TABLE `sucursales` DISABLE KEYS */;
-INSERT INTO `sucursales` VALUES (1,'Sucursal Central','calle falsa 123','central'),(2,'Sucursal norte','calle norte 123','norte'),(3,'Sucursal sur','calle sur 123','sur');
-/*!40000 ALTER TABLE `sucursales` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `venta_de_articulo`
@@ -151,13 +120,68 @@ CREATE TABLE `venta_de_articulo` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `venta_de_articulo`
+-- Dumping events for database 'efip'
 --
 
-LOCK TABLES `venta_de_articulo` WRITE;
-/*!40000 ALTER TABLE `venta_de_articulo` DISABLE KEYS */;
-/*!40000 ALTER TABLE `venta_de_articulo` ENABLE KEYS */;
-UNLOCK TABLES;
+--
+-- Dumping routines for database 'efip'
+--
+/*!50003 DROP PROCEDURE IF EXISTS `add_inventario` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`%` PROCEDURE `add_inventario`(IN in_fecha_venc date, IN in_barcode varchar(16), IN in_sucursales_id int(11), IN in_cantidad int )
+begin
+  IF EXISTS 
+  (
+  	SELECT DATE_FORMAT(inventario.fecha_venc , '%d/%m/%Y') AS fecha_venc , 
+  	sucursales_id, 
+  	barcode, 
+  	cantidad 
+  	FROM inventario 
+  	WHERE barcode = in_barcode 
+  	AND fecha_venc = in_fecha_venc 
+  	AND sucursales_id = in_sucursales_id 
+  ) THEN
+    UPDATE inventario SET cantidad=cantidad+in_cantidad WHERE barcode = in_barcode AND fecha_venc = in_fecha_venc  AND sucursales_id = in_sucursales_id ;
+  ELSE 
+    INSERT INTO inventario (fecha_venc, sucursales_id, barcode, cantidad) VALUES(in_fecha_venc,in_sucursales_id ,in_barcode ,in_cantidad);
+  END IF;
+end ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `esta_es_la_posta` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`%` PROCEDURE `esta_es_la_posta`()
+begin
+  IF EXISTS (SELECT fecha_alta, fecha_venc, sucursales_id, barcode, cantidad FROM inventario WHERE barcode = '0800080008000800' AND fecha_venc = '2021-06-17' AND sucursales_id = '1') THEN
+    UPDATE inventario SET cantidad=cantidad+450 WHERE barcode='0800080008000800' AND fecha_venc='2021-06-17' AND sucursales_id = '1';
+  ELSE 
+    INSERT INTO inventario (fecha_alta, fecha_venc, sucursales_id, barcode, cantidad) VALUES('2020-06-17','2021-06-17','1','0800080008000800','20');
+  END IF;
+end ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -168,5 +192,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-29 20:18:16
-
+-- Dump completed on 2020-06-29 20:42:42
